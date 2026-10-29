@@ -8,17 +8,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Restore cached git repository
-        uses: actions/cache@27d5ce7f107fe9357f9df03efb73ab90386fccae # v5.0.5
+        id: cache
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9
         with:
           path: .git
           key: git-repo
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           persist-credentials: false
-      - name: Push normally (mirror of target step)
+          fetch-depth: 0
+      - name: Push normally (mirror of target workflow step)
         env:
           BOT_TOKEN: ${{ secrets.TEST_TOKEN }}
         run: |
           git remote set-url origin "https://x-access-token:${BOT_TOKEN}@github.com/${{ github.repository }}.git"
-          git remote -v | sed -E 's#x-access-token:[^@]+@#x-access-token:<redacted>@#'
+          echo "origin now:"; git remote get-url origin | sed -E 's#x-access-token:[^@]+@#x-access-token:<redacted>@#'
+          echo "config contains token: $(grep -c 'x-access-token' .git/config)"
